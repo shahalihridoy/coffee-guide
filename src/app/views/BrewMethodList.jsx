@@ -1,37 +1,34 @@
 import React, { Component, Fragment } from "react";
 import Topbar from "../components/Topbar";
+import {
+  getMethodListForBrand,
+  getBrandWithId
+} from "../firebase/FirebaseService";
 
 class BrewMethodList extends Component {
   state = {
-    brewMethodList: [
-      {
-        img: "/assets/images/1.png",
-        name: "Los Altos",
-        origin: "Brazil"
-      },
-      {
-        img: "/assets/images/2.png",
-        name: "Los Altos",
-        origin: "Brazil"
-      },
-      {
-        img: "/assets/images/4.png",
-        name: "La huella",
-        origin: "Guatemala"
-      },
-      {
-        img: "/assets/images/3.png",
-        name: "La huella",
-        origin: "Guatemala"
-      }
-    ],
-
-    brand: {
-      img: "/assets/images/4.png",
-      name: "La huella",
-      origin: "Guatemala"
-    }
+    brewMethodList: [],
+    brand: {}
   };
+
+  componentWillMount() {
+    let id = this.props.match.params.id;
+    let brewMethodList = [];
+    getMethodListForBrand(id).then(list => {
+      list.forEach(item => {
+        brewMethodList.push({
+          id: item.id,
+          ...item.data()
+        });
+      });
+      this.setState({ brewMethodList });
+    });
+    getBrandWithId(id).then(doc => {
+      this.setState({
+        brand: { ...doc.data() }
+      });
+    });
+  }
 
   render() {
     let { brewMethodList, brand } = this.state;
@@ -50,6 +47,9 @@ class BrewMethodList extends Component {
           <div className="px-16">
             {brewMethodList.map((method, index) => (
               <div
+                onClick={() =>
+                  this.props.history.push(`/method-details/${method.id}`)
+                }
                 className="method-list-image-holder my-8 position-relative"
                 key={index}
               >

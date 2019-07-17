@@ -18,9 +18,9 @@ const App = () => {
       <ThemeProvider theme={materialTheme}>
         <Router>
           <Switch>
-            <Route path="/methods/:id" component={MethodDetails} />
+            <Route path="/method-details/:id" component={MethodDetails} />
             <Route path="/brands" component={BrandList} />
-            <Route path="/methods" component={BrewMethodList} />
+            <Route path="/methods/:id" component={BrewMethodList} />
             <Route path="/" render={props => <Redirect to="/brands" />} />
           </Switch>
         </Router>

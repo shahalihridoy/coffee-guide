@@ -1,47 +1,22 @@
 import React, { Component, Fragment } from "react";
 import Topbar from "../components/Topbar";
 import { Button } from "@material-ui/core";
+import { getMethodDetailsWithId } from "../firebase/FirebaseService";
 
 class MethodDetails extends Component {
   state = {
+    updated: false,
     shouldShowTimer: false,
     countDownTime: "00:00",
     remainingTime: "00:00",
     targetMass: 0,
     description: "Preheat water, add beans and zero scale",
     method: {
-      img: "/assets/images/4.png",
-      name: "La huella",
-      requirements: {
-        coffee: 56,
-        coffeeText: "The suggested grain size is between course and medium",
-        water: 250,
-        waterText: "Preferabley between 85 and 95 centigrade",
-        time: 35
-      }
+      requirements: {}
     }
   };
 
-  stages = [
-    {
-      time: 5,
-      mass: 50,
-      description: "Evenly pre-infuse beans up to target"
-    },
-    {
-      time: 10,
-      mass: 100,
-      description: "Evenly infuse beans and maintain water level"
-    },
-    {
-      time: 20,
-      mass: 100,
-      description: "Compress aeropress in given time"
-    },
-    {
-      description: "Dilute the concentrate with 130g water"
-    }
-  ];
+  stages = [];
 
   minute;
   second;
@@ -119,6 +94,21 @@ class MethodDetails extends Component {
     });
   };
 
+  componentWillMount() {
+    let id = this.props.match.params.id;
+    getMethodDetailsWithId(id).then(doc => {
+      let { stages } = doc.data();
+      this.stages = [...stages];
+      delete doc.data().stages;
+      this.setState({
+        method: {
+          ...doc.data()
+        },
+        updated: true
+      });
+    });
+  }
+
   render() {
     let {
       method,
@@ -126,11 +116,12 @@ class MethodDetails extends Component {
       targetMass,
       countDownTime,
       remainingTime,
-      shouldShowTimer
+      shouldShowTimer,
+      updated
     } = this.state;
     return (
       <Fragment>
-        <Topbar previousPage="brew" title="pourover (v60)" />
+        <Topbar previousPage="brew" title={method.brewName} />
         <div className="method-details bg-dark pb-16">
           <div className="brand-image-holder mb-8 position-relative">
             <img src={method.img} alt="method" />
@@ -145,7 +136,9 @@ class MethodDetails extends Component {
                   <h4>
                     <u>Ground Coffee Required:</u>
                   </h4>
-                  <h4>{method.requirements.coffee.toFixed(1)} grams</h4>
+                  <h4>
+                    {updated ? method.requirements.coffee.toFixed(1) : ""} grams
+                  </h4>
                   <h5 className="font-weight-normal">
                     {method.requirements.coffeeText}
                   </h5>
@@ -154,7 +147,9 @@ class MethodDetails extends Component {
                   <h4>
                     <u>Ground Coffee Required:</u>
                   </h4>
-                  <h4>{method.requirements.water.toFixed(1)} mL</h4>
+                  <h4>
+                    {updated ? method.requirements.water.toFixed(1) : ""} mL
+                  </h4>
                   <h5 className="font-weight-normal">
                     {method.requirements.waterText}
                   </h5>
